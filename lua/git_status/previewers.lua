@@ -78,8 +78,8 @@ end
 local function inject_hunk_diffs_highlights(bufnr, hunk_diffs)
   local diffs, highlights = diffs_with_linesspec(hunk_diffs)
 
-  -- adjust start/end (when change type diff, start is -1 to adjust for the header)
-  local start = hunk_diffs.type == 'change' and hunk_diffs.added.start - 1 or hunk_diffs.added.start
+  -- adjust start/end (when delete type diff, start is -1 to adjust for the header)
+  local start = hunk_diffs.type == 'delete' and hunk_diffs.added.start or hunk_diffs.added.start - 1
   local end_ = hunk_diffs.end_
 
   -- set preview buffer lines
