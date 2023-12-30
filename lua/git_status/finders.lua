@@ -1,16 +1,15 @@
 local finders = require('telescope.finders')
 
-local function run(command)
-  local handle = io.popen(command)
+local systems = require('git_status.systems')
 
-  if handle then
-    local result = handle:read("*a")
-    handle:close()
+local function run_git(args)
+  local job = systems.create_job({
+    command = 'git',
+    args = args,
+  })
+  job:sync()
 
-    return result
-  end
-
-  return ''
+  return job:result()
 end
 
 local function create_hunk(old_start, old_count, new_start, new_count)
@@ -49,9 +48,19 @@ end
 
 local function make_results()
   local results = {}
-  for filename in string.gmatch(run('git diff --name-only'), "(.-)\n") do
+  for _, filename in ipairs(run_git({
+    'diff',
+    '--name-only',
+  })) do
     local hunk_diffs = {}
-    for line in string.gmatch(run('git diff --unified=0 --no-color --indent-heuristic --histogram ' .. filename), "(.-)\n") do
+    for _, line in ipairs(run_git({
+      'diff',
+      '--unified=0',
+      '--no-color',
+      '--indent-heuristic',
+      '--histogram',
+      filename,
+    })) do
       if vim.startswith(line, '@@') then
         -- make new hunk holder
         table.insert(hunk_diffs, parse_diff(line))
